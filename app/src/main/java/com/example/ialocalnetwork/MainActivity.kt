@@ -1,0 +1,240 @@
+package com.example.ialocalnetwork
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.example.ialocalnetwork.ui.theme.IALocalNetworkTheme
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+
+// Las clases de datos mejor aquí afuera para que sean accesibles
+@Serializable
+data class OllamaRequest(
+    val model: String,
+    val prompt: String,
+    val stream: Boolean = false
+)
+
+@Serializable
+data class OllamaResponse(
+    val response: String,
+    val done: Boolean
+)
+
+class MainActivity : ComponentActivity() {
+
+    //var lastPrompt by remember { mutableStateOf("") }
+    fun parseOllamaResponse(rawJson: String): String {
+        // Busca el contenido del campo "response"
+        val regex = "\"response\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
+        val match = regex.find(rawJson)
+
+        return match?.groupValues?.get(1)
+            ?.replace("\\n", "\n") // Corrige los saltos de línea
+            ?.replace("\\\"", "\"") // Corrige las comillas escapadas
+            ?: "No se pudo procesar la respuesta"
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val ollamaClient = IAClient()
+
+        setContent {
+            IALocalNetworkTheme (dynamicColor = false){
+                // Estados para manejar la UI
+                var lastPrompt by remember { mutableStateOf("") }
+                var prompt by remember { mutableStateOf("") }
+                var responseText by remember { mutableStateOf("La respuesta aparecerá aquí...") }
+                val scope = rememberCoroutineScope()
+                var selectedModel by remember { mutableStateOf("llama3.1") }
+                var models by remember { mutableStateOf(listOf<String>()) }
+                var expanded by remember { mutableStateOf(false) }
+
+                LaunchedEffect(Unit) {
+                    models = ollamaClient.getLocalModels()
+                    if (models.isNotEmpty()) selectedModel = models[0]
+                }
+
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+//                    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+//                        // Área de respuesta con Scroll
+////                        Text(
+////                            text = responseText,
+////                            modifier = Modifier
+////                                .weight(1f)
+////                                .fillMaxWidth()
+////                                .verticalScroll(rememberScrollState())
+////                        )
+//
+//                        // Área de respuesta con mejor diseño
+//                        Box(
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .fillMaxWidth()
+//                                .padding(top = 32.dp) // <--- Esto evita que choque con la cámara (notch)
+//                        ) {
+//                            Surface(
+//                                color = MaterialTheme.colorScheme.secondaryContainer,
+//                                shape = MaterialTheme.shapes.medium,
+//                                modifier = Modifier.fillMaxWidth()
+//                            ) {
+//                                Text(
+//                                    text = responseText,
+//                                    modifier = Modifier
+//                                        .padding(16.dp) // Margen interno para que el texto no toque los bordes del cuadro
+//                                        .verticalScroll(rememberScrollState()),
+//                                    style = MaterialTheme.typography.bodyLarge
+//                                )
+//                            }
+//                        }
+//
+//                        Spacer(modifier = Modifier.height(16.dp))
+//
+//                        // Entrada de texto
+//                        OutlinedTextField(
+//                            value = prompt,
+//                            onValueChange = { prompt = it },
+//                            modifier = Modifier.fillMaxWidth(),
+//                            label = { Text("Pregúntale a tu RX 9060 XT...") }
+//                        )
+//
+//                        // Botón de envío
+//                        //Modifier.align(Alignment.End).padding(top = 8.dp)
+//
+//                        Button(
+//                            onClick = {
+//                                scope.launch {
+//                                    responseText = "Pensando..."
+//                                    val fullJson = ollamaClient.askOllama(prompt)
+//                                    responseText = parseOllamaResponse(fullJson)
+//                                    prompt = ""
+//                                }
+////                                scope.launch {
+////                                    responseText = "Pensando..."
+////                                    responseText = ollamaClient.askOllama(prompt)
+////                                    prompt = "" // Limpia el texto después de enviar
+////                                }
+//                            },
+//                            modifier = Modifier
+//                                .align(Alignment.End)
+//                                .padding(top = 8.dp)
+//                        ) {
+//                            Text("Enviar")
+//                        }
+                    //}
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .statusBarsPadding() // <--- Crucial para no chocar con la cámara
+                            .padding(16.dp)
+                    ) {
+                        // Área de Chat (Scrollable)
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedModel,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Selecciona IA") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                models.forEach { model ->
+                                    DropdownMenuItem(
+                                        text = { Text(model) },
+                                        onClick = {
+                                            selectedModel = model
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            // Tu Pregunta (Solo aparece si ya preguntaste algo)
+                            if (lastPrompt.isNotEmpty()) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier.align(Alignment.End).padding(start = 40.dp, bottom = 12.dp)
+                                ) {
+                                    Text(
+                                        text = lastPrompt,
+                                        modifier = Modifier.padding(12.dp),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+
+                            // Respuesta de la RX 9060 XT
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.align(Alignment.Start).padding(end = 40.dp)
+                            ) {
+                                Text(
+                                    text = responseText,
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Entrada de texto y Botón
+                        OutlinedTextField(
+                            value = prompt,
+                            onValueChange = { prompt = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text("Pregúntale a tu red local") },
+                            shape = MaterialTheme.shapes.large
+                        )
+
+                        Button(
+                            onClick = {
+                                if (prompt.isNotBlank()) {
+                                    scope.launch {
+                                        lastPrompt = prompt // Guardamos la pregunta antes de limpiar el input
+                                        prompt = ""         // Limpiamos el cuadro de texto
+                                        responseText = "Pensando..."
+                                        val fullJson = ollamaClient.askOllama(lastPrompt)
+                                        responseText = parseOllamaResponse(fullJson)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.End).padding(top = 8.dp)
+                        ) {
+                            Text("Enviar")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
