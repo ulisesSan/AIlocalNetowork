@@ -20,5 +20,6 @@ A native Android application built with **Jetpack Compose** and **Ktor** to inte
 - [ ] Support for streaming responses.
 - [ ] Image support for multimodal models (Ollama Vision).
 
-## 📺 Demo
-Check out the app in action: [Watch on YouTube Shorts](https://youtube.com/shorts/7Yifv6agxg8?feature=share) or downloadit here:
+## 📺 Demo & Download
+- 🎥 **Watch in action:** [YouTube Shorts](https://youtube.com/shorts/7Yifv6agxg8?feature=share)
+- 📦 **Download APK:** [Latest Release](https://github.com/ulisesSan/AIlocalNetowork/releases/tag/V.0.0.3)
