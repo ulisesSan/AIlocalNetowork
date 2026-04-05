@@ -1,11 +1,13 @@
 package com.example.ialocalnetwork
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,8 +40,8 @@ class MainActivity : ComponentActivity() {
         val match = regex.find(rawJson)
 
         return match?.groupValues?.get(1)
-            ?.replace("\\n", "\n") // Corrige los saltos de línea
-            ?.replace("\\\"", "\"") // Corrige las comillas escapadas
+            ?.replace("\\n", "\n")
+            ?.replace("\\\"", "\"")
             ?: "No se pudo procesar la respuesta"
     }
 
@@ -47,21 +49,49 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val ollamaClient = IAClient()
+        val configManager = ConfigManager(this)
 
         setContent {
             IALocalNetworkTheme (dynamicColor = false){
-                // Estados para manejar la UI
+
                 var lastPrompt by remember { mutableStateOf("") }
                 var prompt by remember { mutableStateOf("") }
                 var responseText by remember { mutableStateOf("La respuesta aparecerá aquí...") }
                 val scope = rememberCoroutineScope()
-                var selectedModel by remember { mutableStateOf("llama3.1") }
+                var selectedModel by remember { mutableStateOf("Configure su IP") }
                 var models by remember { mutableStateOf(listOf<String>()) }
                 var expanded by remember { mutableStateOf(false) }
+                var showDialog by remember { mutableStateOf(false) }
+                var currentIp by remember { mutableStateOf(configManager.getIp()) }
+                var ipInput by remember { mutableStateOf(currentIp) }
 
                 LaunchedEffect(Unit) {
-                    models = ollamaClient.getLocalModels()
+                    models = ollamaClient.getLocalModels(currentIp)
                     if (models.isNotEmpty()) selectedModel = models[0]
+
+                    ollamaClient.getLocalModels(currentIp)
+                }
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Configurar Servidor") },
+                        text = {
+                            OutlinedTextField(
+                                value = ipInput,
+                                onValueChange = { ipInput = it },
+                                label = { Text("IP de tu PC (Ollama)") }
+
+                            )
+                        },
+                        confirmButton = {
+                            Button(onClick = {
+                                configManager.saveIp(ipInput)
+                                currentIp = ipInput // Actualizamos el estado local
+                                showDialog = false
+                            }) { Text("Guardar") }
+                        }
+                    )
                 }
 
                 Surface(
@@ -137,10 +167,31 @@ class MainActivity : ComponentActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .statusBarsPadding() // <--- Crucial para no chocar con la cámara
+                            .statusBarsPadding()
                             .padding(16.dp)
                     ) {
-                        // Área de Chat (Scrollable)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Configuración de Red",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            IconButton(onClick = { showDialog = true }) {
+                                // Importante: Asegúrate de tener los iconos de Material importados
+                                Icon(
+                                    imageVector = androidx.compose.material.icons.Icons.Default.Settings,
+                                    contentDescription = "Ajustes",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
                         ExposedDropdownMenuBox(
                             expanded = expanded,
                             onExpandedChange = { expanded = !expanded }
@@ -174,7 +225,6 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxWidth()
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            // Tu Pregunta (Solo aparece si ya preguntaste algo)
                             if (lastPrompt.isNotEmpty()) {
                                 Surface(
                                     color = MaterialTheme.colorScheme.primaryContainer,
@@ -190,7 +240,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-                            // Respuesta de la RX 9060 XT
                             Surface(
                                 color = MaterialTheme.colorScheme.surfaceVariant,
                                 shape = MaterialTheme.shapes.medium,
@@ -207,7 +256,6 @@ class MainActivity : ComponentActivity() {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Entrada de texto y Botón
                         OutlinedTextField(
                             value = prompt,
                             onValueChange = { prompt = it },
@@ -220,10 +268,10 @@ class MainActivity : ComponentActivity() {
                             onClick = {
                                 if (prompt.isNotBlank()) {
                                     scope.launch {
-                                        lastPrompt = prompt // Guardamos la pregunta antes de limpiar el input
-                                        prompt = ""         // Limpiamos el cuadro de texto
+                                        lastPrompt = prompt
+                                        prompt = ""
                                         responseText = "Pensando..."
-                                        val fullJson = ollamaClient.askOllama(lastPrompt)
+                                        val fullJson = ollamaClient.askOllama(lastPrompt,currentIp)
                                         responseText = parseOllamaResponse(fullJson)
                                     }
                                 }
@@ -235,6 +283,17 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+    class ConfigManager(context: Context) {
+        private val prefs = context.getSharedPreferences("config", Context.MODE_PRIVATE)
+
+        fun saveIp(ip: String) {
+            prefs.edit().putString("ollama_ip", ip).apply()
+        }
+
+        fun getIp(): String {
+            return prefs.getString("ollama_ip", "192.168.1.100") ?: "192.168.1.100"
         }
     }
 }

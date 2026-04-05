@@ -8,7 +8,7 @@ import io.ktor.http.*
 class IAClient {
     private val client = HttpClient()
 
-    suspend fun askOllama(prompt: String): String {
+    suspend fun askOllama(prompt: String,ip: String): String {
         return try {
             // Construimos el JSON como un String plano
             val escapedPrompt = prompt.replace("\"", "\\\"").replace("\n", "\\n")
@@ -24,7 +24,7 @@ class IAClient {
                 }
             """.trimIndent()
 
-            val response = client.post("http://192.168.1.81:11434/api/generate") {
+            val response = client.post("http://$ip:11434/api/generate") {
                 contentType(ContentType.Application.Json)
                 setBody(jsonBody)
             }
@@ -36,9 +36,9 @@ class IAClient {
         }
     }
 
-    suspend fun getLocalModels(): List<String> {
+    suspend fun getLocalModels(ip: String): List<String> {
         return try {
-            val response = client.get("http://192.168.1.81:11434/api/tags") // Usa tu IP real
+            val response = client.get("http://$ip:11434/api/tags") // Usa tu IP real
             val body = response.bodyAsText()
 
             // Regex rápida para sacar los nombres de los modelos
