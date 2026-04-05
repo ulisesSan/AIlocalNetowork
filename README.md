@@ -16,3 +16,7 @@ over wise on your local network
 ![img.png](images/img3.png)
 
 It can not save conversations (i'm still working with this)
+
+Demonstrative video
+
+https://youtube.com/shorts/7Yifv6agxg8?feature=share
