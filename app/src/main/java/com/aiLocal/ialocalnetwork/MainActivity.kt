@@ -1,4 +1,4 @@
-package com.example.ialocalnetwork
+package com.aiLocal.ialocalnetwork
 
 import android.content.Context
 import android.os.Bundle
@@ -7,13 +7,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.ialocalnetwork.ui.theme.IALocalNetworkTheme
+import com.aiLocal.ialocalnetwork.ui.theme.IALocalNetworkTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -52,7 +53,7 @@ class MainActivity : ComponentActivity() {
         val configManager = ConfigManager(this)
 
         setContent {
-            IALocalNetworkTheme (dynamicColor = false){
+            IALocalNetworkTheme(dynamicColor = false) {
 
                 var lastPrompt by remember { mutableStateOf("") }
                 var prompt by remember { mutableStateOf("") }
@@ -183,7 +184,7 @@ class MainActivity : ComponentActivity() {
                             IconButton(onClick = { showDialog = true }) {
                                 // Importante: Asegúrate de tener los iconos de Material importados
                                 Icon(
-                                    imageVector = androidx.compose.material.icons.Icons.Default.Settings,
+                                    imageVector = Icons.Default.Settings,
                                     contentDescription = "Ajustes",
                                     tint = MaterialTheme.colorScheme.primary
                                 )
@@ -229,7 +230,8 @@ class MainActivity : ComponentActivity() {
                                 Surface(
                                     color = MaterialTheme.colorScheme.primaryContainer,
                                     shape = MaterialTheme.shapes.medium,
-                                    modifier = Modifier.align(Alignment.End).padding(start = 40.dp, bottom = 12.dp)
+                                    modifier = Modifier.align(Alignment.End)
+                                        .padding(start = 40.dp, bottom = 12.dp)
                                 ) {
                                     Text(
                                         text = lastPrompt,
@@ -271,7 +273,7 @@ class MainActivity : ComponentActivity() {
                                         lastPrompt = prompt
                                         prompt = ""
                                         responseText = "Pensando..."
-                                        val fullJson = ollamaClient.askOllama(lastPrompt,currentIp)
+                                        val fullJson = ollamaClient.askOllama(lastPrompt, currentIp)
                                         responseText = parseOllamaResponse(fullJson)
                                     }
                                 }
@@ -286,7 +288,7 @@ class MainActivity : ComponentActivity() {
         }
     }
     class ConfigManager(context: Context) {
-        private val prefs = context.getSharedPreferences("config", Context.MODE_PRIVATE)
+        private val prefs = context.getSharedPreferences("config", MODE_PRIVATE)
 
         fun saveIp(ip: String) {
             prefs.edit().putString("ollama_ip", ip).apply()

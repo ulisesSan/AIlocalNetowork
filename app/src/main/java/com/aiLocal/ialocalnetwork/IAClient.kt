@@ -1,4 +1,4 @@
-package com.example.ialocalnetwork
+package com.aiLocal.ialocalnetwork
 
 import io.ktor.client.*
 import io.ktor.client.request.*

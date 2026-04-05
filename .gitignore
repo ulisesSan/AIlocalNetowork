@@ -14,3 +14,9 @@
 .cxx
 local.properties
 .idea
+
+# Ignorar salidas de compilación de Release
+**/release/
+*.apk
+*.aab
+KeystoreAILocal.jks

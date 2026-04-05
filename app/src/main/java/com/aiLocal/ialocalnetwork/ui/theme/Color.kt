@@ -1,4 +1,4 @@
-package com.example.ialocalnetwork.ui.theme
+package com.aiLocal.ialocalnetwork.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
