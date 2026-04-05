@@ -1,22 +1,24 @@
-# AIlocalNetowork
+# AIlocalNetwork 📱🤖
 
-This app was make to connect to an llm using http protocol and ollama tool
+A native Android application built with **Jetpack Compose** and **Ktor** to interact with an **Ollama** instance over a local network via HTTP.
 
-You can insert an ip direction and it will search all llms installed in ollama
+## 🚀 Features
 
-![img.png](images/img.png)
+- **Dynamic Configuration:** Easily set your server's IP address within the app—no recompilation needed.
+- **Model Discovery:** Automatically fetches and lists all LLMs installed on your Ollama server for quick switching.
+- **Local Network Power:** Offload AI processing to your powerful desktop or server (GPU-accelerated) while chatting from your phone.
+- **Material 3 UI:** Clean, modern interface with native dark mode support.
 
-Wen all reads all llms installed it will be listed and you can choose any one
+## 📸 Screenshots
 
-![img.png](images/img2.png)
+| Connection & IP | Model Selection | Chat Interface |
+| :---: | :---: | :---: |
+| ![Settings](images/img.png) | ![Models](images/img2.png) | ![Chat](images/img3.png) |
 
-In the text box you can write your prompt and will be send to your computer, server or any thing where your AI runs 
-over wise on your local network
+## 🚧 Work in Progress
+- [ ] Local conversation history (Persistence).
+- [ ] Support for streaming responses.
+- [ ] Image support for multimodal models (Ollama Vision).
 
-![img.png](images/img3.png)
-
-It can not save conversations (i'm still working with this)
-
-Demonstrative video
-
-https://youtube.com/shorts/7Yifv6agxg8?feature=share
+## 📺 Demo
+Check out the app in action: [Watch on YouTube Shorts](https://youtube.com/shorts/7Yifv6agxg8?feature=share)
