@@ -17,6 +17,5 @@ local.properties
 
 # Ignorar salidas de compilación de Release
 **/release/
-*.apk
 *.aab
 KeystoreAILocal.jks

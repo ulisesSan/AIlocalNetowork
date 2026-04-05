@@ -21,4 +21,4 @@ A native Android application built with **Jetpack Compose** and **Ktor** to inte
 - [ ] Image support for multimodal models (Ollama Vision).
 
 ## 📺 Demo
-Check out the app in action: [Watch on YouTube Shorts](https://youtube.com/shorts/7Yifv6agxg8?feature=share)
+Check out the app in action: [Watch on YouTube Shorts](https://youtube.com/shorts/7Yifv6agxg8?feature=share) or downloadit here:
