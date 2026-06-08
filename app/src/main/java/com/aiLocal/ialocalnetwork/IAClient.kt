@@ -8,13 +8,13 @@ import io.ktor.http.*
 class IAClient {
     private val client = HttpClient()
 
-    suspend fun askOllama(prompt: String,ip: String): String {
+    suspend fun askOllama(prompt: String,ip: String, model: String): String {
         return try {
             // Construimos el JSON como un String plano
             val escapedPrompt = prompt.replace("\"", "\\\"").replace("\n", "\\n")
             val jsonBody = """
                 {
-                    "model": "llama3.1",
+                    "model": "$model",
                     "prompt": "$escapedPrompt",
                     "stream": false,
                     "keep_alive": 0,

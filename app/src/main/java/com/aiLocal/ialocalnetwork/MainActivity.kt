@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.aiLocal.ialocalnetwork.ui.theme.IALocalNetworkTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -90,6 +91,16 @@ class MainActivity : ComponentActivity() {
                                 configManager.saveIp(ipInput)
                                 currentIp = ipInput // Actualizamos el estado local
                                 showDialog = false
+//                                models = ollamaClient.getLocalModels(currentIp)
+//                                if(models.isNotEmpty()) selectedModel = models[0]
+                                scope.launch(Dispatchers.IO) {
+                                    models = ollamaClient.getLocalModels(currentIp)
+                                    if (models.isNotEmpty()) selectedModel = models[0]
+
+                                    ollamaClient.getLocalModels(currentIp)
+                                }
+
+                                //ollamaClient.getLocalModels(currentIp)
                             }) { Text("Guardar") }
                         }
                     )
@@ -99,72 +110,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-//                    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-//                        // Área de respuesta con Scroll
-////                        Text(
-////                            text = responseText,
-////                            modifier = Modifier
-////                                .weight(1f)
-////                                .fillMaxWidth()
-////                                .verticalScroll(rememberScrollState())
-////                        )
-//
-//                        // Área de respuesta con mejor diseño
-//                        Box(
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .fillMaxWidth()
-//                                .padding(top = 32.dp) // <--- Esto evita que choque con la cámara (notch)
-//                        ) {
-//                            Surface(
-//                                color = MaterialTheme.colorScheme.secondaryContainer,
-//                                shape = MaterialTheme.shapes.medium,
-//                                modifier = Modifier.fillMaxWidth()
-//                            ) {
-//                                Text(
-//                                    text = responseText,
-//                                    modifier = Modifier
-//                                        .padding(16.dp) // Margen interno para que el texto no toque los bordes del cuadro
-//                                        .verticalScroll(rememberScrollState()),
-//                                    style = MaterialTheme.typography.bodyLarge
-//                                )
-//                            }
-//                        }
-//
-//                        Spacer(modifier = Modifier.height(16.dp))
-//
-//                        // Entrada de texto
-//                        OutlinedTextField(
-//                            value = prompt,
-//                            onValueChange = { prompt = it },
-//                            modifier = Modifier.fillMaxWidth(),
-//                            label = { Text("Pregúntale a tu RX 9060 XT...") }
-//                        )
-//
-//                        // Botón de envío
-//                        //Modifier.align(Alignment.End).padding(top = 8.dp)
-//
-//                        Button(
-//                            onClick = {
-//                                scope.launch {
-//                                    responseText = "Pensando..."
-//                                    val fullJson = ollamaClient.askOllama(prompt)
-//                                    responseText = parseOllamaResponse(fullJson)
-//                                    prompt = ""
-//                                }
-////                                scope.launch {
-////                                    responseText = "Pensando..."
-////                                    responseText = ollamaClient.askOllama(prompt)
-////                                    prompt = "" // Limpia el texto después de enviar
-////                                }
-//                            },
-//                            modifier = Modifier
-//                                .align(Alignment.End)
-//                                .padding(top = 8.dp)
-//                        ) {
-//                            Text("Enviar")
-//                        }
-                    //}
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -273,7 +218,8 @@ class MainActivity : ComponentActivity() {
                                         lastPrompt = prompt
                                         prompt = ""
                                         responseText = "Pensando..."
-                                        val fullJson = ollamaClient.askOllama(lastPrompt, currentIp)
+                                        val fullJson = ollamaClient.askOllama(lastPrompt, currentIp,
+                                            selectedModel)
                                         responseText = parseOllamaResponse(fullJson)
                                     }
                                 }
