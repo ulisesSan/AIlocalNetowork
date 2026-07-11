@@ -10,7 +10,8 @@ class ConfigManager(context: Context) {
     }
 
     fun getIp(): String {
-        // "10.0.2.2" es el default para el emulador, pero cámbialo a tu IP real si quieres
-        return prefs.getString("ollama_ip", "192.168.1.100") ?: "192.168.1.100"
+        // "10.0.2.2" es el default para acceder al PC desde el emulador de Android.
+        // Si usas un dispositivo real, pon la IP local de tu PC (ej: 192.168.1.XX).
+        return prefs.getString("ollama_ip", "10.0.2.2") ?: "10.0.2.2"
     }
 }
