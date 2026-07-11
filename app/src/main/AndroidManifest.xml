@@ -16,7 +16,8 @@
             android:name="com.aiLocal.ialocalnetwork.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.IALocalNetwork">
+            android:theme="@style/Theme.IALocalNetwork"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
